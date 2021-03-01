@@ -23,14 +23,14 @@ var tokenHub = common.HexToAddress("0x0000000000000000000000000000000000001004")
 func main() {
 	client, _ := ethclient.Dial(wsEndpoint)
 	mc, _ := tokenhub.NewTokenhub(tokenHub, client)
-	//go calTransferOutResult(client, mc)
+	go calTransferOutResult(client, mc)
 	go calFefundResult(client, mc)
 	select {}
 }
 
 func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 
-	startCalHeight := uint64(1784447)
+	startCalHeight := uint64(1)
 	finalCalHeight := uint64(5306245)
 	hubAPI, err := abi.JSON(strings.NewReader(tokenhub.TokenhubABI))
 	if err != nil {
@@ -99,7 +99,7 @@ func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 
 func calFefundResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 
-	startCalHeight := uint64(1784447)
+	startCalHeight := uint64(1)
 	finalCalHeight := uint64(5306245)
 	refunds := make([]*Refund, 0)
 	var endHeight uint64
