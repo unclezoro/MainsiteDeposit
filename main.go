@@ -62,6 +62,7 @@ func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 					if err != nil {
 						fmt.Println("unpack failed")
 						fmt.Println(err)
+						return
 					}
 					bz := arg.Recipient.Bytes()
 					addr := types.AccAddress(bz)
