@@ -26,11 +26,35 @@ func main() {
 	go calTransferOutResult(client, mc)
 	go calFefundResult(client, mc)
 	select {}
+	//bz1, _ := ioutil.ReadFile("refund.json")
+	//bz2, _ := ioutil.ReadFile("transfer_out.json")
+	//outs := make([]*TransferOut, 0)
+	//refund := make([]*Refund, 0)
+	//json.Unmarshal(bz1, &refund)
+	//json.Unmarshal(bz2, &outs)
+	//fmt.Println("done")
+	//out2 := make(map[common.Hash]*TransferOut)
+	//for _, o := range outs {
+	//	out2[o.TxHash] = o
+	//}
+	//for _, r := range refund {
+	//	for t, o := range out2 {
+	//		if r.TxHash.String() == "0x377fb4dc7b03b7d08b8b5fd6366800c0dfc98b15794e1cbdf8deb2f86a7f0a12" && o.TxHash.String() == "0x58d1302331c7763c725bcab928ca740c5773e25871bb40bada92a7bee283560c" {
+	//			fmt.Println("xx")
+	//		}
+	//		if r.Amount.Cmp(o.Amount) == 0 && r.Bep20Contract == o.Bep20Contract && r.RefundAddr == o.Sender && r.Hegiht-o.Hegiht < 2000 {
+	//			fmt.Println(t.String())
+	//			delete(out2, t)
+	//		}
+	//	}
+	//}
+	//fmt.Println(len(outs))
+	//fmt.Println(len(out2))
 }
 
 func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 
-	startCalHeight := uint64(1)
+	startCalHeight := uint64(5300245)
 	finalCalHeight := uint64(5306245)
 	hubAPI, err := abi.JSON(strings.NewReader(tokenhub.TokenhubABI))
 	if err != nil {
@@ -74,7 +98,7 @@ func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 							Hegiht:        event.Raw.BlockNumber,
 							TxHash:        tmpTxHash,
 							Sender:        event.SenderAddr,
-							Bep20Contract: event.Bep20Addr,
+							Bep20Contract: arg.ContractAddr,
 							Recipient:     arg.Recipient,
 							Amount:        arg.Amount,
 							ExpireTime:    arg.ExpireTime,
@@ -99,7 +123,7 @@ func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 
 func calFefundResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 
-	startCalHeight := uint64(1)
+	startCalHeight := uint64(5300245)
 	finalCalHeight := uint64(5306245)
 	refunds := make([]*Refund, 0)
 	var endHeight uint64
