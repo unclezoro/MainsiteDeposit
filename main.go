@@ -23,7 +23,7 @@ var tokenHub = common.HexToAddress("0x0000000000000000000000000000000000001004")
 func main() {
 	client, _ := ethclient.Dial(wsEndpoint)
 	mc, _ := tokenhub.NewTokenhub(tokenHub, client)
-	go calTransferOutResult(client, mc)
+	//go calTransferOutResult(client, mc)
 	go calFefundResult(client, mc)
 	select {}
 	//bz1, _ := ioutil.ReadFile("refund.json")
@@ -39,9 +39,12 @@ func main() {
 	//}
 	//for _, r := range refund {
 	//	for t, o := range out2 {
-	//		if r.TxHash.String() == "0x377fb4dc7b03b7d08b8b5fd6366800c0dfc98b15794e1cbdf8deb2f86a7f0a12" && o.TxHash.String() == "0x58d1302331c7763c725bcab928ca740c5773e25871bb40bada92a7bee283560c" {
+	//		if r.TxHash.String() == "0xbe4267164eb92fe9bebcf61c1444064153563cd0d0f69821d5cf40c26705a846" && o.TxHash.String() == "0x701a1432fcc864e551046f8eaea2bd0e148da3cf05b0a3758988e5da519c1320" {
 	//			fmt.Println("xx")
+	//			fmt.Println(r.RefundAddr.String())
+	//			fmt.Println(o.Sender.String())
 	//		}
+	//
 	//		if r.Amount.Cmp(o.Amount) == 0 && r.Bep20Contract == o.Bep20Contract && r.RefundAddr == o.Sender && r.Hegiht-o.Hegiht < 2000 {
 	//			fmt.Println(t.String())
 	//			delete(out2, t)
@@ -164,7 +167,9 @@ func GetRefundTxs(mc *tokenhub.Tokenhub, start, end *big.Int) (map[common.Hash]*
 		return nil, err
 	}
 	for ite1.Next() {
-		res[ite1.Event.Raw.TxHash] = ite1.Event
+		txHash := ite1.Event.Raw.TxHash
+		tmpev := ite1.Event
+		res[txHash] = tmpev
 	}
 	return res, nil
 }
