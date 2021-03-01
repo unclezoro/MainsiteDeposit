@@ -23,14 +23,14 @@ var tokenHub = common.HexToAddress("0x0000000000000000000000000000000000001004")
 func main() {
 	client, _ := ethclient.Dial(wsEndpoint)
 	mc, _ := tokenhub.NewTokenhub(tokenHub, client)
-	go calTransferOutResult(client, mc)
+	//go calTransferOutResult(client, mc)
 	go calFefundResult(client, mc)
 	select {}
 }
 
 func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 
-	startCalHeight := uint64(1)
+	startCalHeight := uint64(1784447)
 	finalCalHeight := uint64(5306245)
 	hubAPI, err := abi.JSON(strings.NewReader(tokenhub.TokenhubABI))
 	if err != nil {
@@ -61,6 +61,7 @@ func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 					arg, err := upPackTx(tmpTx.Data(), &hubAPI)
 					if err != nil {
 						fmt.Println("unpack failed")
+						wg.Done()
 						fmt.Println(err)
 						return
 					}
@@ -98,7 +99,7 @@ func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 
 func calFefundResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 
-	startCalHeight := uint64(1)
+	startCalHeight := uint64(1784447)
 	finalCalHeight := uint64(5306245)
 	refunds := make([]*Refund, 0)
 	var endHeight uint64
@@ -111,8 +112,6 @@ func calFefundResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 			panic(err)
 		}
 
-		var wg sync.WaitGroup
-		wg.Add(len(txs))
 		for tx, event := range txs {
 			refunds = append(refunds, &Refund{
 				Hegiht:        event.Raw.BlockNumber,
@@ -123,7 +122,6 @@ func calFefundResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 			})
 
 		}
-		wg.Wait()
 		height = endHeight + 1
 	}
 	bz, _ := json.MarshalIndent(refunds, "", "\t")
