@@ -23,7 +23,7 @@ var tokenHub = common.HexToAddress("0x0000000000000000000000000000000000001004")
 func main() {
 	client, _ := ethclient.Dial(wsEndpoint)
 	mc, _ := tokenhub.NewTokenhub(tokenHub, client)
-	//go calTransferOutResult(client, mc)
+	go calTransferOutResult(client, mc)
 	go calFefundResult(client, mc)
 	select {}
 	//bz1, _ := ioutil.ReadFile("refund.json")
@@ -80,6 +80,7 @@ func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 		wg.Add(len(txs))
 		for tx, event := range txs {
 			tmpTxHash := tx
+			tmpevent:= event
 			taskPool.Schedule(func() {
 				tmpTx, _, err := c.TransactionByHash(context.Background(), tmpTxHash)
 				if err != nil {
@@ -98,9 +99,9 @@ func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 						mx.Lock()
 						fmt.Printf("find  match %s\n", tmpTx.Hash().String())
 						transferOuts = append(transferOuts, &TransferOut{
-							Hegiht:        event.Raw.BlockNumber,
+							Hegiht:        tmpevent.Raw.BlockNumber,
 							TxHash:        tmpTxHash,
-							Sender:        event.SenderAddr,
+							Sender:        tmpevent.SenderAddr,
 							Bep20Contract: arg.ContractAddr,
 							Recipient:     arg.Recipient,
 							Amount:        arg.Amount,
@@ -185,6 +186,7 @@ func GetTransoutTxs(mc *tokenhub.Tokenhub, start, end *big.Int) (map[common.Hash
 		return nil, err
 	}
 	for ite1.Next() {
+
 		res[ite1.Event.Raw.TxHash] = ite1.Event
 	}
 	return res, nil
