@@ -21,38 +21,47 @@ var wsEndpoint = "wss://bsc-ws-node.nariox.org:443"
 var tokenHub = common.HexToAddress("0x0000000000000000000000000000000000001004")
 
 func main() {
-	client, _ := ethclient.Dial(wsEndpoint)
-	mc, _ := tokenhub.NewTokenhub(tokenHub, client)
-	go calTransferOutResult(client, mc)
-	go calFefundResult(client, mc)
-	select {}
-	//bz1, _ := ioutil.ReadFile("refund.json")
-	//bz2, _ := ioutil.ReadFile("transfer_out.json")
-	//outs := make([]*TransferOut, 0)
-	//refund := make([]*Refund, 0)
-	//json.Unmarshal(bz1, &refund)
-	//json.Unmarshal(bz2, &outs)
-	//fmt.Println("done")
-	//out2 := make(map[common.Hash]*TransferOut)
-	//for _, o := range outs {
-	//	out2[o.TxHash] = o
-	//}
-	//for _, r := range refund {
-	//	for t, o := range out2 {
-	//		if r.TxHash.String() == "0xbe4267164eb92fe9bebcf61c1444064153563cd0d0f69821d5cf40c26705a846" && o.TxHash.String() == "0x701a1432fcc864e551046f8eaea2bd0e148da3cf05b0a3758988e5da519c1320" {
-	//			fmt.Println("xx")
-	//			fmt.Println(r.RefundAddr.String())
-	//			fmt.Println(o.Sender.String())
-	//		}
-	//
-	//		if r.Amount.Cmp(o.Amount) == 0 && r.Bep20Contract == o.Bep20Contract && r.RefundAddr == o.Sender && r.Hegiht-o.Hegiht < 2000 {
-	//			fmt.Println(t.String())
-	//			delete(out2, t)
-	//		}
-	//	}
-	//}
-	//fmt.Println(len(outs))
-	//fmt.Println(len(out2))
+	//client, _ := ethclient.Dial(wsEndpoint)
+	//mc, _ := tokenhub.NewTokenhub(tokenHub, client)
+	//go calTransferOutResult(client, mc)
+	//go calFefundResult(client, mc)
+	//select {}
+	bz1, _ := ioutil.ReadFile("refund.json")
+	bz2, _ := ioutil.ReadFile("transfer_out.json")
+	outs := make([]*TransferOut, 0)
+	refund := make([]*Refund, 0)
+	json.Unmarshal(bz1, &refund)
+	json.Unmarshal(bz2, &outs)
+	fmt.Println("done")
+	out2 := make(map[common.Hash]*TransferOut)
+	for _, o := range outs {
+		out2[o.TxHash] = o
+	}
+	for _, r := range refund {
+		for t, o := range out2 {
+			if r.TxHash.String() == "0xbe4267164eb92fe9bebcf61c1444064153563cd0d0f69821d5cf40c26705a846" && o.TxHash.String() == "0x701a1432fcc864e551046f8eaea2bd0e148da3cf05b0a3758988e5da519c1320" {
+				fmt.Println("xx")
+				fmt.Println(r.RefundAddr.String())
+				fmt.Println(o.Sender.String())
+			}
+
+			if r.Amount.Cmp(o.Amount) == 0 && r.Bep20Contract == o.Bep20Contract && r.RefundAddr == o.Sender && r.Hegiht-o.Hegiht < 2000 {
+				fmt.Println(t.String())
+				delete(out2, t)
+			}
+		}
+	}
+	fmt.Println(len(outs))
+	fmt.Println(len(out2))
+
+	outx := make([]*TransferOut, 0)
+	for _, o := range outs {
+		if _, exist := out2[o.TxHash]; exist {
+			outx = append(outx, o)
+		}
+	}
+	bz, _ := json.MarshalIndent(outx, "", "\t")
+	ioutil.WriteFile(fmt.Sprintf("transfer_out_final.json"), bz, 0600)
 }
 
 func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
@@ -80,7 +89,7 @@ func calTransferOutResult(c *ethclient.Client, mc *tokenhub.Tokenhub) {
 		wg.Add(len(txs))
 		for tx, event := range txs {
 			tmpTxHash := tx
-			tmpevent:= event
+			tmpevent := event
 			taskPool.Schedule(func() {
 				tmpTx, _, err := c.TransactionByHash(context.Background(), tmpTxHash)
 				if err != nil {
